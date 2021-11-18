@@ -1,0 +1,67 @@
+import sys
+import ast
+import mysql.connector
+import re
+import json
+
+
+def choose_lines(beginning_of_line):
+    return line.startswith(beginning_of_line)
+
+
+def extract_middle(sentence, symbol, part):
+    text = sentence.split(symbol)[part]
+    return text
+
+
+db_host = sys.argv[1]
+db_user = sys.argv[2]
+db_password = sys.argv[3]
+db_database = sys.argv[4]
+
+log_path = sys.argv[5]
+
+db = mysql.connector.connect(
+    host=db_host,
+    user=db_user,
+    passwd=db_password,
+    database=db_database
+)
+
+tables = db.cursor()
+
+count_lines = -1
+
+lines=[]
+with open(log_path) as f:
+    lines = f.readlines()
+
+for line in lines:
+    if choose_lines("Processing file:"):
+        file_path = extract_middle(line, ": ", 1)
+        break
+for line in lines:
+    count_lines = count_lines+1
+    if choose_lines("csv-report-parser installed"):
+        data = extract_middle(line, ": ", 1)
+        data_list = data.split(",")
+        for item in data_list:
+            if choose_lines("certifi"):
+                parsing_date = extract_middle(line, "==", 1)
+    elif choose_lines("csv-report-parser run-test:"):
+        host = re.search("(?P<url>https?://[^\s]+)", line).group("url")
+
+    elif choose_lines("Sending"):
+        data = extract_middle(line, "Sending ", 1)
+        data = extract_middle(data, " for reference", -2)
+        data_dict = ast.literal_eval(data)
+        api = extract_middle(data_dict["method"],".",0)
+        name = extract_middle(data_dict["method"],".",1)
+        parameters = json.dumps(data_dict["params"])
+        running_time = extract_middle(lines[count_lines+1], "Got response in ", 1)
+        running_time = extract_middle(running_time, "s", 0)
+        tables.execute("INSERT INTO MethodNames (API, name, parameters, path, runningTime) VALUES (%s,%s,%s,%s,%s)", (api, name, parameters, file_path, running_time))
+
+tables.execute("INSERT INTO File (filePath, parsingDate, hostname) VALUES (%s,%s,%s)", (file_path, parsing_date, host))
+
+db.commit()
