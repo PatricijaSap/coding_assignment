@@ -1,0 +1,46 @@
+import mysql.connector
+from datetime import datetime, timedelta
+
+
+db_host = sys.argv[1]
+db_user = sys.argv[2]
+db_password = sys.argv[3]
+db_database = sys.argv[4]
+
+db = mysql.connector.connect(
+    host=db_host,
+    user=db_user,
+    passwd=db_password,
+    database=db_database
+)
+
+tables = db.cursor()
+
+tables.execute("SELECT DISTINCT api FROM Methods")
+api_list = tables.fetchall()
+
+api_time = {}
+averages = {}
+
+for item in api_list:
+    api_time[item[0]]=[0,0]
+
+# Extracting data
+for item in api_list:
+    tables.execute("SELECT * FROM Methods WHERE api = '%s'" % (item[0]))
+    item_list = tables.fetchall()[0]
+    item_list = list(item_list)
+    tables.execute("SELECT * FROM Files WHERE filePath = '%s'" % (item_list[3]))
+    parsing_date = tables.fetchall()
+    parsing_date = list(parsing_date[0])
+    parsing_date = datetime.strptime(parsing_date[1], "%Y.%m.%d")
+    if parsing_date > datetime.today() - timedelta(days=1000):
+        api_time[item[0]][0] = api_time[item[0]][0] + 1
+        api_time[item[0]][1] = api_time[item[0]][1] + item_list[4]
+
+# Counting averages
+for item in api_list:
+    averages[item[0]] = api_time[item[0]][1]/api_time[item[0]][0]
+
+for key, value in averages.items():
+    print("Average running time of ", key, " is ", value)
