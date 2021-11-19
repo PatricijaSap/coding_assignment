@@ -16,7 +16,7 @@ db = mysql.connector.connect(
 
 tables = db.cursor()
 
-tables.execute("CREATE TABLE File (filePath varchar(50) PRIMARY KEY, parsingDate varchar(50) NOT NULL, hostname varchar(50) NOT NULL)")
-tables.execute("CREATE TABLE MethodNames (API varchar(50), name varchar(50) NOT NULL, parameters varchar(50) NOT NULL, path varchar(50), FOREIGN KEY(path) REFERENCES File(filePath)), runningTime float, id int PRIMARY KEY AUTO_INCREMENT")
+tables.execute("CREATE TABLE Files (filePath varchar(50) PRIMARY KEY, parsingDate varchar(50) NOT NULL, hostname varchar(50) NOT NULL)")
+tables.execute("CREATE TABLE Methods (API varchar(50), name varchar(50) NOT NULL, parameters varchar(50) NOT NULL, path varchar(50), FOREIGN KEY(path) REFERENCES File(filePath)), runningTime float, id int PRIMARY KEY AUTO_INCREMENT")
 
 db.commit()
