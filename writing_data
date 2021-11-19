@@ -5,8 +5,8 @@ import re
 import json
 
 
-def choose_lines(beginning_of_line):
-    return line.startswith(beginning_of_line)
+def choose_lines(sentence, beginning_of_line):
+    return sentence.startswith(beginning_of_line)
 
 
 def extract_middle(sentence, symbol, part):
